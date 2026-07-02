@@ -35,10 +35,20 @@ pnpm typecheck
 pnpm build
 ```
 
+## Docker
+
+```bash
+docker compose up --build
+```
+
 ## API
 
 See `openapi.yaml`.
 
+## Architecture
+
+See `docs/ARCHITECTURE.md`.
+
 ## Licence
 
-MIT.
+Apache-2.0.
