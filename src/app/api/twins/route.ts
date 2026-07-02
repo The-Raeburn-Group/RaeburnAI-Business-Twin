@@ -1,11 +1,21 @@
 import { z } from 'zod';
+import { audit } from '../../../lib/audit';
+import { handleError, ok, parseJson, fail } from '../../../lib/http';
+import { checkRateLimit, getClientKey } from '../../../lib/rate-limit';
 import { createTwin, listTwins } from '../../../lib/store';
-import { handleError, ok, parseJson } from '../../../lib/http';
 
-const Input = z.object({ name: z.string().min(2) });
+const Input = z.object({ name: z.string().min(2).max(120) });
 
-export async function GET() {
+function enforceRateLimit(request: Request) {
+  const result = checkRateLimit(getClientKey(request));
+  if (!result.allowed) return fail('Too many requests', 429, { retryAfterSeconds: result.retryAfterSeconds });
+  return null;
+}
+
+export async function GET(request: Request) {
   try {
+    const limited = enforceRateLimit(request);
+    if (limited) return limited;
     const twins = await listTwins();
     return ok(twins);
   } catch (error) {
@@ -15,8 +25,11 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
+    const limited = enforceRateLimit(request);
+    if (limited) return limited;
     const body = await parseJson(request, Input);
     const twin = await createTwin(body.name);
+    audit('twin.create', twin.id, { name: twin.name });
     return ok(twin, 201);
   } catch (error) {
     return handleError(error);
