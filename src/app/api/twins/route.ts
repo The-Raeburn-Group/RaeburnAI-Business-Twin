@@ -9,7 +9,9 @@ const Input = z.object({ name: z.string().min(2).max(120) });
 
 function enforceRateLimit(request: Request) {
   const result = checkRateLimit(getClientKey(request));
-  if (!result.allowed) return fail('Too many requests', 429, { retryAfterSeconds: result.retryAfterSeconds });
+  if (!result.allowed) {
+    return fail('Too many requests', 429, { retryAfterSeconds: result.retryAfterSeconds });
+  }
   return null;
 }
 
@@ -19,6 +21,7 @@ export async function GET(request: Request) {
     if (!auth.ok) return auth.response;
     const forbidden = requireRole(auth.role, 'viewer');
     if (forbidden) return forbidden;
+
     const limited = enforceRateLimit(request);
     if (limited) return limited;
     const twins = await listTwins();
@@ -34,6 +37,7 @@ export async function POST(request: Request) {
     if (!auth.ok) return auth.response;
     const forbidden = requireRole(auth.role, 'admin');
     if (forbidden) return forbidden;
+
     const limited = enforceRateLimit(request);
     if (limited) return limited;
     const body = await parseJson(request, Input);
