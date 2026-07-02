@@ -13,6 +13,7 @@ export default [
         process: 'readonly',
         Request: 'readonly',
         Response: 'readonly',
+        fetch: 'readonly',
         crypto: 'readonly',
         React: 'readonly',
       },
