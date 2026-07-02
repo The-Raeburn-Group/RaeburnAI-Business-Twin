@@ -1,0 +1,12 @@
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      RAEBURN_DATA_DIR: /app/.data
+    volumes:
+      - business-twin-data:/app/.data
+volumes:
+  business-twin-data:
