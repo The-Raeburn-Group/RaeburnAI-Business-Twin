@@ -28,7 +28,9 @@ async function requestDatabase<T>(query: string, variables: Record<string, unkno
   const endpoint = process.env.RAEBURN_DATABASE_HTTP_URL;
   const token = process.env.RAEBURN_DATABASE_SERVICE_TOKEN;
   if (!endpoint || !token) {
-    throw new Error('Database adapter requires RAEBURN_DATABASE_HTTP_URL and RAEBURN_DATABASE_SERVICE_TOKEN.');
+    throw new Error(
+      'Database adapter requires RAEBURN_DATABASE_HTTP_URL and RAEBURN_DATABASE_SERVICE_TOKEN.',
+    );
   }
 
   const response = await fetch(endpoint, {
@@ -60,24 +62,29 @@ async function saveJsonTwin(twin: BusinessTwin): Promise<BusinessTwin> {
   return updated;
 }
 
+function unwrapTwinRow(row: unknown): unknown {
+  if (typeof row === 'object' && row !== null && 'data' in row) return row.data;
+  return row;
+}
+
 export async function listTwins(): Promise<BusinessTwin[]> {
   if (driver() === 'json') return listJsonTwins();
   const result = await requestDatabase<{ data: unknown[] }>('select_twins');
-  return BusinessTwinSchema.array().parse(result.data.map((row) => (typeof row === 'object' && row !== null && 'data' in row ? row.data : row)));
+  return BusinessTwinSchema.array().parse(result.data.map(unwrapTwinRow));
 }
 
 export async function getTwin(id: string): Promise<BusinessTwin | undefined> {
   if (driver() === 'json') return (await listJsonTwins()).find((twin) => twin.id === id);
   const result = await requestDatabase<{ data: unknown | null }>('get_twin', { id });
   if (!result.data) return undefined;
-  return BusinessTwinSchema.parse(result.data);
+  return BusinessTwinSchema.parse(unwrapTwinRow(result.data));
 }
 
 export async function saveTwin(twin: BusinessTwin): Promise<BusinessTwin> {
   const updated = { ...twin, updatedAt: new Date().toISOString() };
   if (driver() === 'json') return saveJsonTwin(updated);
   const result = await requestDatabase<{ data: unknown }>('upsert_twin', { twin: updated });
-  return BusinessTwinSchema.parse(result.data ?? updated);
+  return BusinessTwinSchema.parse(result.data ? unwrapTwinRow(result.data) : updated);
 }
 
 export async function createTwin(name: string): Promise<BusinessTwin> {
