@@ -17,7 +17,7 @@
     "verify": "pnpm lint && pnpm format && pnpm typecheck && pnpm test && pnpm build"
   },
   "dependencies": {
-    "@types/node": "22.13.14",
+    "@types/node": "26.1.0",
     "@types/react": "19.0.12",
     "@types/react-dom": "19.0.4",
     "clsx": "2.1.1",
