@@ -1,6 +1,6 @@
-import { describe, expect, it } from 'vitest';
-import { mostExpensiveWorkflows, runScenario, workflowHours } from '../src/domain/simulation';
 import { sampleTwin } from '../src/domain/sample';
+import { mostExpensiveWorkflows, runScenario, workflowHours } from '../src/domain/simulation';
+import { describe, expect, it } from 'vitest';
 
 describe('business twin simulation', () => {
   it('calculates workflow hours', () => {
@@ -13,13 +13,21 @@ describe('business twin simulation', () => {
   });
 
   it('runs capacity scenario', () => {
-    const result = runScenario(sampleTwin, 'capacity question', { type: 'capacity_loss', role: 'Recruiter', peopleLost: 3 });
+    const result = runScenario(sampleTwin, 'capacity question', {
+      type: 'capacity_loss',
+      role: 'Recruiter',
+      peopleLost: 3,
+    });
     expect(result.impactScore).toBeGreaterThan(0);
     expect(result.findings.length).toBeGreaterThan(0);
   });
 
   it('runs automation scenario', () => {
-    const result = runScenario(sampleTwin, 'automation question', { type: 'automation', workflowId: 'wf-reporting', automationLevel: 0.7 });
+    const result = runScenario(sampleTwin, 'automation question', {
+      type: 'automation',
+      workflowId: 'wf-reporting',
+      automationLevel: 0.7,
+    });
     expect(result.summary).toContain('save');
   });
 });
